@@ -1,4 +1,4 @@
-package com.amionline.network
+package com.quack.online.network
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

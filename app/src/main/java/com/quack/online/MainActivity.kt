@@ -1,4 +1,4 @@
-package com.amionline
+package com.quack.online
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -16,9 +16,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
-import com.amionline.databinding.ActivityMainBinding
-import com.amionline.network.PingResult
-import com.amionline.network.PingRunner
+import com.quack.online.databinding.ActivityMainBinding
+import com.quack.online.network.PingResult
+import com.quack.online.network.PingRunner
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 

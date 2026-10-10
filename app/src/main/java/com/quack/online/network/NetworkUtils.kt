@@ -1,4 +1,4 @@
-package com.amionline.network
+package com.quack.online.network
 
 import java.net.Inet6Address
 import java.net.InetAddress
