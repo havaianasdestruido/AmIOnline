@@ -1,4 +1,6 @@
-# Bolt's Journal
+## 2024-06-25 - Extracted Regex compilation in NetworkUtils
+**Learning:** Found a regex compilation inside `isValidHostname` which was called frequently.
+**Action:** Lifted `Regex` instance to `NetworkUtils` singleton property to avoid re-compiling it on every invocation. Check for inline Regex declarations in utility functions next time.
 
 ## 2026-10-10 - Kotlin-side micro-optimizations are negligible in AmIOnline
 **Learning:** Almost all the wall-clock time in a ping run is spent spawning the `ping`/`ping6` process and waiting on network round-trips (seconds). The Kotlin work around it (address classification, regex checks, a few `TextView.append` calls) runs in microseconds, so changes like hoisting a `Regex` are real but imperceptible to users.
