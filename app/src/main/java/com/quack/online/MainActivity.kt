@@ -231,7 +231,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun appendConsole(text: String) {
-        val shouldFollowOutput = !binding.scrollConsole.canScrollVertically(1)
+        val scrollView = binding.scrollConsole
+        val scrollYBeforeAppend = scrollView.scrollY
+        val shouldFollowOutput = !scrollView.canScrollVertically(1)
         val contentChanged = consoleLog.append(text)
         if (contentChanged) {
             // Re-render only when old output is evicted; normal output stays incremental.
@@ -243,9 +245,12 @@ class MainActivity : AppCompatActivity() {
 
         if (shouldFollowOutput && !consoleScrollPending) {
             consoleScrollPending = true
-            binding.scrollConsole.post {
+            scrollView.post {
                 consoleScrollPending = false
-                binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
+                // Output may have been queued while the user scrolled up to read the log.
+                if (scrollView.scrollY >= scrollYBeforeAppend) {
+                    scrollView.fullScroll(View.FOCUS_DOWN)
+                }
             }
         }
     }

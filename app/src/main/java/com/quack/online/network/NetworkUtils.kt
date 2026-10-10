@@ -7,7 +7,7 @@ object NetworkUtils {
 
     // Compile once rather than creating a new regular expression for each target validation.
     private val hostnameRegex = Regex(
-        "^(?=.{1,253}\\$)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\\$"
+        "^(?=.{1,253}\\z)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\\z"
     )
 
     enum class AddressType {
