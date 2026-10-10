@@ -26,8 +26,10 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val pingRunner = PingRunner()
+    private val consoleLog = ConsoleLog()
     private var pingJob: Job? = null
     private var isPinging = false
+    private var consoleScrollPending = false
 
     private val presetTargets = listOf(
         "1.1.1.1",
@@ -124,6 +126,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnClearLog.setOnClickListener {
+            consoleLog.clear()
             binding.tvConsoleOutput.text = ""
         }
 
@@ -228,9 +231,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun appendConsole(text: String) {
-        binding.tvConsoleOutput.append(text + "\n")
-        binding.scrollConsole.post {
-            binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
+        val scrollView = binding.scrollConsole
+        val scrollYBeforeAppend = scrollView.scrollY
+        val shouldFollowOutput = !scrollView.canScrollVertically(1)
+        val contentChanged = consoleLog.append(text)
+        if (contentChanged) {
+            // Re-render only when old output is evicted; normal output stays incremental.
+            binding.tvConsoleOutput.text = consoleLog.snapshot()
+        } else {
+            binding.tvConsoleOutput.append(text)
+            binding.tvConsoleOutput.append("\n")
+        }
+
+        if (shouldFollowOutput && !consoleScrollPending) {
+            consoleScrollPending = true
+            scrollView.post {
+                consoleScrollPending = false
+                // Output may have been queued while the user scrolled up to read the log.
+                if (scrollView.scrollY >= scrollYBeforeAppend) {
+                    scrollView.fullScroll(View.FOCUS_DOWN)
+                }
+            }
         }
     }
 }

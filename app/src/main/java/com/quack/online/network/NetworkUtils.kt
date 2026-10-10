@@ -16,17 +16,14 @@ object NetworkUtils {
         val trimmed = input.trim()
         if (trimmed.isEmpty()) return AddressType.INVALID
 
-        // Check if IPv4 format (x.x.x.x)
         if (isIpv4Address(trimmed)) {
             return AddressType.IPV4
         }
 
-        // Check if IPv6 format (contains colon and valid hex groups)
         if (isIpv6Address(trimmed)) {
             return AddressType.IPV6
         }
 
-        // Check basic hostname format
         if (isValidHostname(trimmed)) {
             return AddressType.HOSTNAME
         }
@@ -54,30 +51,31 @@ object NetworkUtils {
 
     // Compiled once per process instead of on every call: getAddressType() runs
     // for each ping, and Regex(...) would otherwise call Pattern.compile each time.
-    private val hostnameRegex = Regex("^(?=.{1,253}\$)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\$")
+    private val hostnameRegex = Regex(
+        """^(?=.{1,253}\z)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}\z"""
+    )
 
     fun isValidHostname(input: String): Boolean {
         if (input.length > 253 || input.isEmpty()) return false
         return hostnameRegex.matches(input) || input.equals("localhost", ignoreCase = true)
     }
 
-    fun buildPingCommand(target: String, count: Int = 4, timeoutSeconds: Int = 5): List<String> {
-        val type = getAddressType(target)
-        val isIpv6 = type == AddressType.IPV6
+    fun buildPingCommand(target: String, count: Int = 4, timeoutSeconds: Int = 5): List<String> =
+        buildPingCommand(target, count, timeoutSeconds, getAddressType(target))
 
-        val cmd = mutableListOf<String>()
-        if (isIpv6) {
-            cmd.add("ping6")
-        } else {
-            cmd.add("ping")
-        }
-
-        cmd.add("-c")
-        cmd.add(count.toString())
-        cmd.add("-W")
-        cmd.add(timeoutSeconds.toString())
-        cmd.add(target.trim())
-
-        return cmd
+    /** Reuses a previously computed type when validation and command construction happen together. */
+    internal fun buildPingCommand(
+        target: String,
+        count: Int,
+        timeoutSeconds: Int,
+        addressType: AddressType
+    ): List<String> {
+        val command = mutableListOf(if (addressType == AddressType.IPV6) "ping6" else "ping")
+        command.add("-c")
+        command.add(count.toString())
+        command.add("-W")
+        command.add(timeoutSeconds.toString())
+        command.add(target.trim())
+        return command
     }
 }

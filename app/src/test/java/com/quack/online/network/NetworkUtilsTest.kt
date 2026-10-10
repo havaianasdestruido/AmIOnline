@@ -23,6 +23,11 @@ class NetworkUtilsTest {
     }
 
     @Test
+    fun testValidHostnameEndsAtInputBoundary() {
+        assertTrue(NetworkUtils.isValidHostname("example.com"))
+    }
+
+    @Test
     fun testBuildPingCommand() {
         val ipv4Cmd = NetworkUtils.buildPingCommand("1.1.1.1", 4, 3)
         assertEquals(listOf("ping", "-c", "4", "-W", "3", "1.1.1.1"), ipv4Cmd)
