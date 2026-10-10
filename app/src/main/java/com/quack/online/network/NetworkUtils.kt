@@ -5,11 +5,6 @@ import java.net.InetAddress
 
 object NetworkUtils {
 
-    // Compile once rather than creating a new regular expression for each target validation.
-    private val hostnameRegex = Regex(
-        "^(?=.{1,253}\\z)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\\z"
-    )
-
     enum class AddressType {
         IPV4,
         IPV6,
@@ -56,7 +51,9 @@ object NetworkUtils {
 
     // Compiled once per process instead of on every call: getAddressType() runs
     // for each ping, and Regex(...) would otherwise call Pattern.compile each time.
-    private val hostnameRegex = Regex("^(?=.{1,253}\$)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\$")
+    private val hostnameRegex = Regex(
+        """^(?=.{1,253}\z)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}\z"""
+    )
 
     fun isValidHostname(input: String): Boolean {
         if (input.length > 253 || input.isEmpty()) return false
