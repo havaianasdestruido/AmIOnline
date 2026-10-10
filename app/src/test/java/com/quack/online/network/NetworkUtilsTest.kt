@@ -1,4 +1,4 @@
-package com.amionline.network
+package com.quack.online.network
 
 import org.junit.Assert.*
 import org.junit.Test

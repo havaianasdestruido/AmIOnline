@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.amionline"
+    namespace = "com.quack.online"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.amionline"
+        applicationId = "com.quack.online"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
