@@ -25,7 +25,7 @@
     <string name="status_offline">Status: OFFLINE (Failed)</string>
 
     <string name="about_description">AmIOnline is a lightweight, fully native Android application designed to test network connectivity via IPv4 and IPv6 ICMP ping.</string>
-    <string name="github_url">https://github.com/amionline/amionline</string>
+    <string name="github_url">https://github.com/havaianasdestruido/AmIOnline/</string>
     <string name="about_version">Version 1.0.0</string>
     <string name="copied_to_clipboard">Copied log to clipboard</string>
 </resources>
