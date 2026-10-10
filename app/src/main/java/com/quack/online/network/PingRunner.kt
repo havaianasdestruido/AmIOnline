@@ -28,7 +28,8 @@ class PingRunner {
             return@flow
         }
 
-        val command = NetworkUtils.buildPingCommand(trimmedTarget, count, timeoutSeconds)
+        // Reuse the classification above instead of parsing the target a second time.
+        val command = NetworkUtils.buildPingCommand(trimmedTarget, count, timeoutSeconds, addressType)
         var process: Process? = null
 
         try {
