@@ -1,0 +1,80 @@
+package com.amionline.network
+
+import java.net.Inet6Address
+import java.net.InetAddress
+
+object NetworkUtils {
+
+    enum class AddressType {
+        IPV4,
+        IPV6,
+        HOSTNAME,
+        INVALID
+    }
+
+    fun getAddressType(input: String): AddressType {
+        val trimmed = input.trim()
+        if (trimmed.isEmpty()) return AddressType.INVALID
+
+        // Check if IPv4 format (x.x.x.x)
+        if (isIpv4Address(trimmed)) {
+            return AddressType.IPV4
+        }
+
+        // Check if IPv6 format (contains colon and valid hex groups)
+        if (isIpv6Address(trimmed)) {
+            return AddressType.IPV6
+        }
+
+        // Check basic hostname format
+        if (isValidHostname(trimmed)) {
+            return AddressType.HOSTNAME
+        }
+
+        return AddressType.INVALID
+    }
+
+    fun isIpv4Address(input: String): Boolean {
+        val parts = input.split(".")
+        if (parts.size != 4) return false
+        return parts.all { part ->
+            part.toIntOrNull()?.let { it in 0..255 && (part == "0" || !part.startsWith("0")) } ?: false
+        }
+    }
+
+    fun isIpv6Address(input: String): Boolean {
+        if (!input.contains(":")) return false
+        return try {
+            val addr = InetAddress.getByName(input)
+            addr is Inet6Address
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun isValidHostname(input: String): Boolean {
+        if (input.length > 253 || input.isEmpty()) return false
+        val hostnameRegex = Regex("^(?=.{1,253}\$)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\$")
+        return hostnameRegex.matches(input) || input.equals("localhost", ignoreCase = true)
+    }
+
+    fun buildPingCommand(target: String, count: Int = 4, timeoutSeconds: Int = 5): List<String> {
+        val type = getAddressType(target)
+        val isIpv6 = type == AddressType.IPV6
+
+        val cmd = mutableListOf<String>()
+        if (isIpv6) {
+            cmd.add("ping6")
+        } else {
+            cmd.add("ping")
+        }
+
+        cmd.add("-c")
+        cmd.add(count.toString())
+        cmd.add("-W")
+        cmd.add(timeoutSeconds.toString())
+        cmd.add(target.trim())
+
+        return cmd
+    }
+}
