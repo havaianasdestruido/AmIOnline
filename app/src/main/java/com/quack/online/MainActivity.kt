@@ -37,6 +37,10 @@ class MainActivity : AppCompatActivity() {
         "Custom"
     )
 
+    private val scrollRunnable = Runnable {
+        binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -229,8 +233,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun appendConsole(text: String) {
         binding.tvConsoleOutput.append(text + "\n")
-        binding.scrollConsole.post {
-            binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
-        }
+
+        // Debounce the scroll to avoid multiple layout passes if many lines arrive at once
+        binding.scrollConsole.removeCallbacks(scrollRunnable)
+        binding.scrollConsole.post(scrollRunnable)
     }
 }
