@@ -28,7 +28,8 @@ class PingRunner {
             return@flow
         }
 
-        val command = NetworkUtils.buildPingCommand(trimmedTarget, count, timeoutSeconds)
+        val isIpv6 = addressType == NetworkUtils.AddressType.IPV6
+        val command = NetworkUtils.buildPingCommand(trimmedTarget, isIpv6, count, timeoutSeconds)
         var process: Process? = null
 
         try {

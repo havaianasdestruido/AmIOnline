@@ -24,10 +24,10 @@ class NetworkUtilsTest {
 
     @Test
     fun testBuildPingCommand() {
-        val ipv4Cmd = NetworkUtils.buildPingCommand("1.1.1.1", 4, 3)
+        val ipv4Cmd = NetworkUtils.buildPingCommand("1.1.1.1", false, 4, 3)
         assertEquals(listOf("ping", "-c", "4", "-W", "3", "1.1.1.1"), ipv4Cmd)
 
-        val ipv6Cmd = NetworkUtils.buildPingCommand("2606:4700:4700::1111", 5, 2)
+        val ipv6Cmd = NetworkUtils.buildPingCommand("2606:4700:4700::1111", true, 5, 2)
         assertEquals(listOf("ping6", "-c", "5", "-W", "2", "2606:4700:4700::1111"), ipv6Cmd)
     }
 }

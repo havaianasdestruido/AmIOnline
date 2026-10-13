@@ -61,10 +61,7 @@ object NetworkUtils {
         return hostnameRegex.matches(input) || input.equals("localhost", ignoreCase = true)
     }
 
-    fun buildPingCommand(target: String, count: Int = 4, timeoutSeconds: Int = 5): List<String> {
-        val type = getAddressType(target)
-        val isIpv6 = type == AddressType.IPV6
-
+    fun buildPingCommand(target: String, isIpv6: Boolean, count: Int = 4, timeoutSeconds: Int = 5): List<String> {
         val cmd = mutableListOf<String>()
         if (isIpv6) {
             cmd.add("ping6")
