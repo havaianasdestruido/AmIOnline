@@ -29,6 +29,14 @@ class MainActivity : AppCompatActivity() {
     private var pingJob: Job? = null
     private var isPinging = false
 
+    private val pendingConsoleLines = StringBuilder()
+    private val appendRunnable = Runnable {
+        if (pendingConsoleLines.isNotEmpty()) {
+            binding.tvConsoleOutput.append(pendingConsoleLines.toString())
+            pendingConsoleLines.clear()
+        }
+    }
+
     private val presetTargets = listOf(
         "1.1.1.1",
         "2606:4700:4700::1111",
@@ -129,6 +137,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnClearLog.setOnClickListener {
             binding.tvConsoleOutput.text = ""
+            pendingConsoleLines.clear()
         }
 
         binding.btnCopyLog.setOnClickListener {
@@ -232,7 +241,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun appendConsole(text: String) {
-        binding.tvConsoleOutput.append(text + "\n")
+        pendingConsoleLines.append(text).append("\n")
+
+        // Debounce the UI updates to avoid multiple layout passes if many lines arrive at once
+        binding.tvConsoleOutput.removeCallbacks(appendRunnable)
+        binding.tvConsoleOutput.post(appendRunnable)
 
         // Debounce the scroll to avoid multiple layout passes if many lines arrive at once
         binding.scrollConsole.removeCallbacks(scrollRunnable)
