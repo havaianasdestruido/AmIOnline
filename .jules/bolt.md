@@ -7,3 +7,7 @@
 ## 2026-10-10 - UI Thread Performance Regressions with TextView.append
 **Learning:** Calling `append()` on a `TextView` multiple times instead of concatenating strings first is a performance regression in Android. Each `append()` modifies the internal `Editable`, triggers `TextWatcher`s, recalculates layout, and invalidates the View.
 **Action:** Always combine text strings before appending to a `TextView` on Android, rather than splitting them into multiple append calls to save garbage collector time.
+
+## 2026-10-10 - Eliminate Redundant DNS Lookups
+**Learning:** `NetworkUtils.getAddressType()` contains a call to `InetAddress.getByName` inside `isIpv6Address()`. We found this was called redundantly during initialization of the ping command string since we already performed the address validation beforehand.
+**Action:** Always avoid redundant calls to slow operations like DNS lookups by re-using already calculated context variables.
