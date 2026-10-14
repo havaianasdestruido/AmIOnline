@@ -11,3 +11,7 @@
 ## 2026-10-10 - Eliminate Redundant DNS Lookups
 **Learning:** `NetworkUtils.getAddressType()` contains a call to `InetAddress.getByName` inside `isIpv6Address()`. We found this was called redundantly during initialization of the ping command string since we already performed the address validation beforehand.
 **Action:** Always avoid redundant calls to slow operations like DNS lookups by re-using already calculated context variables.
+
+## 2026-10-14 - MessageQueue.removeCallbacks overhead on UI thread
+**Learning:** `View.removeCallbacks(Runnable)` iterates through the main thread's `MessageQueue` linearly (O(N)). Using it for debouncing rapid events (like appending text per-line from a process output) causes significant CPU overhead.
+**Action:** Use a simple `boolean` flag to track if an update is scheduled, changing the scheduling complexity to O(1) and avoiding queue manipulation.
