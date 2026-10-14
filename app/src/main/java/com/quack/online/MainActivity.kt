@@ -30,10 +30,17 @@ class MainActivity : AppCompatActivity() {
     private var isPinging = false
 
     private val pendingConsoleLines = StringBuilder()
-    private val appendRunnable = Runnable {
+    private var isConsoleUpdateScheduled = false
+
+    private val updateConsoleRunnable = Runnable {
+        isConsoleUpdateScheduled = false
         if (pendingConsoleLines.isNotEmpty()) {
             binding.tvConsoleOutput.append(pendingConsoleLines.toString())
             pendingConsoleLines.clear()
+            // Post the scroll to execute after the text view layout updates
+            binding.scrollConsole.post {
+                binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
+            }
         }
     }
 
@@ -44,10 +51,6 @@ class MainActivity : AppCompatActivity() {
         "2001:4860:4860::8888",
         "Custom"
     )
-
-    private val scrollRunnable = Runnable {
-        binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -241,14 +244,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun appendConsole(text: String) {
-        pendingConsoleLines.append(text).append("\n")
+        pendingConsoleLines.append(text).append('\n')
 
-        // Debounce the UI updates to avoid multiple layout passes if many lines arrive at once
-        binding.tvConsoleOutput.removeCallbacks(appendRunnable)
-        binding.tvConsoleOutput.post(appendRunnable)
-
-        // Debounce the scroll to avoid multiple layout passes if many lines arrive at once
-        binding.scrollConsole.removeCallbacks(scrollRunnable)
-        binding.scrollConsole.post(scrollRunnable)
+        if (!isConsoleUpdateScheduled) {
+            isConsoleUpdateScheduled = true
+            binding.tvConsoleOutput.post(updateConsoleRunnable)
+        }
     }
 }
