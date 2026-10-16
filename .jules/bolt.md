@@ -15,3 +15,7 @@
 ## 2026-10-14 - MessageQueue.removeCallbacks overhead on UI thread
 **Learning:** `View.removeCallbacks(Runnable)` iterates through the main thread's `MessageQueue` linearly (O(N)). Using it for debouncing rapid events (like appending text per-line from a process output) causes significant CPU overhead.
 **Action:** Use a simple `boolean` flag to track if an update is scheduled, changing the scheduling complexity to O(1) and avoiding queue manipulation.
+
+## 2026-10-15 - Avoid `InetAddress.getByName()` for IPv6 format validation
+**Learning:** `InetAddress.getByName()` was used inside `NetworkUtils.isIpv6Address()` just to check the string format. If the string was a hostname with colons, or just invalid, this triggered a synchronous, blocking DNS lookup, severely impacting UI responsiveness when resolving invalid inputs.
+**Action:** Use a pre-compiled Regex for IP address format validation instead of the networking stack. Keep in mind not to use `android.util.Patterns.IP_ADDRESS` because it causes `RuntimeException` in local unit tests.
