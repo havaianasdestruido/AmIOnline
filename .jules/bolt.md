@@ -19,3 +19,7 @@
 ## 2026-10-15 - Avoid `InetAddress.getByName()` for IPv6 format validation
 **Learning:** `InetAddress.getByName()` was used inside `NetworkUtils.isIpv6Address()` just to check the string format. If the string was a hostname with colons, or just invalid, this triggered a synchronous, blocking DNS lookup, severely impacting UI responsiveness when resolving invalid inputs.
 **Action:** Use a pre-compiled Regex for IP address format validation instead of the networking stack. Keep in mind not to use `android.util.Patterns.IP_ADDRESS` because it causes `RuntimeException` in local unit tests.
+
+## 2026-10-16 - String.split and mapping overheads in Kotlin loops
+**Learning:** Using `String.split` and functional collection mapping (like `.all {}`) inside frequently called parsing functions (like IP validation) causes significant garbage collection overhead due to repeated object allocations. On slow or memory-constrained environments, this leads to observable pauses during continuous polling.
+**Action:** Replace `String.split` and intermediate collections with zero-allocation, manual character iteration loops for high-frequency string validation functions.

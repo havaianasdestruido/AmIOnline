@@ -34,12 +34,32 @@ object NetworkUtils {
         return AddressType.INVALID
     }
 
+    // Zero-allocation IPv4 parsing optimized to avoid String.split and mapping overheads
+    // which cause significant GC pauses during heavy network polling
     fun isIpv4Address(input: String): Boolean {
-        val parts = input.split(".")
-        if (parts.size != 4) return false
-        return parts.all { part ->
-            part.toIntOrNull()?.let { it in 0..255 && (part == "0" || !part.startsWith("0")) } ?: false
+        var dots = 0
+        var num = 0
+        var len = 0
+        for (i in 0 until input.length) {
+            val c = input[i]
+            if (c == '.') {
+                if (len == 0 || num > 255) return false
+                if (len > 1 && input[i - len] == '0') return false
+                dots++
+                if (dots > 3) return false
+                num = 0
+                len = 0
+            } else if (c in '0'..'9') {
+                num = num * 10 + (c - '0')
+                len++
+                if (len > 3) return false
+            } else {
+                return false
+            }
         }
+        if (len == 0 || num > 255) return false
+        if (len > 1 && input[input.length - len] == '0') return false
+        return dots == 3
     }
 
     // Compiled once per process instead of on every call. Avoids using android.util.Patterns
