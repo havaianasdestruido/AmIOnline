@@ -30,4 +30,30 @@ class NetworkUtilsTest {
         val ipv6Cmd = NetworkUtils.buildPingCommand("2606:4700:4700::1111", true, 5, 2)
         assertEquals(listOf("ping6", "-c", "5", "-W", "2", "2606:4700:4700::1111"), ipv6Cmd)
     }
+
+    @Test
+    fun testIsIpv4AddressValid() {
+        assertTrue(NetworkUtils.isIpv4Address("1.1.1.1"))
+        assertTrue(NetworkUtils.isIpv4Address("8.8.8.8"))
+        assertTrue(NetworkUtils.isIpv4Address("127.0.0.1"))
+        assertTrue(NetworkUtils.isIpv4Address("192.168.1.1"))
+        assertTrue(NetworkUtils.isIpv4Address("255.255.255.255"))
+        assertTrue(NetworkUtils.isIpv4Address("0.0.0.0"))
+        assertTrue(NetworkUtils.isIpv4Address("10.0.0.1"))
+    }
+
+    @Test
+    fun testIsIpv4AddressInvalid() {
+        assertFalse(NetworkUtils.isIpv4Address(""))
+        assertFalse(NetworkUtils.isIpv4Address("1.1.1"))
+        assertFalse(NetworkUtils.isIpv4Address("1.1.1.1.1"))
+        assertFalse(NetworkUtils.isIpv4Address("256.256.256.256"))
+        assertFalse(NetworkUtils.isIpv4Address("192.168.01.1"))
+        assertFalse(NetworkUtils.isIpv4Address("a.b.c.d"))
+        assertFalse(NetworkUtils.isIpv4Address("192.168.1.1a"))
+        assertFalse(NetworkUtils.isIpv4Address("..."))
+        assertFalse(NetworkUtils.isIpv4Address("1..1.1.1"))
+        assertFalse(NetworkUtils.isIpv4Address("-1.1.1.1"))
+        assertFalse(NetworkUtils.isIpv4Address("192.168.1.256"))
+    }
 }
