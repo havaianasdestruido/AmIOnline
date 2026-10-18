@@ -32,15 +32,19 @@ class MainActivity : AppCompatActivity() {
     private val pendingConsoleLines = StringBuilder()
     private var isConsoleUpdateScheduled = false
 
+    // Hoisted to avoid allocating a new anonymous Runnable on every console update
+    private val scrollRunnable = Runnable {
+        binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
+    }
+
     private val updateConsoleRunnable = Runnable {
         isConsoleUpdateScheduled = false
         if (pendingConsoleLines.isNotEmpty()) {
-            binding.tvConsoleOutput.append(pendingConsoleLines.toString())
+            // Pass StringBuilder directly (as CharSequence) to avoid String allocation overhead via .toString()
+            binding.tvConsoleOutput.append(pendingConsoleLines)
             pendingConsoleLines.clear()
             // Post the scroll to execute after the text view layout updates
-            binding.scrollConsole.post {
-                binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
-            }
+            binding.scrollConsole.post(scrollRunnable)
         }
     }
 
