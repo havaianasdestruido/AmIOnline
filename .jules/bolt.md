@@ -23,3 +23,7 @@
 ## 2026-10-16 - String.split and mapping overheads in Kotlin loops
 **Learning:** Using `String.split` and functional collection mapping (like `.all {}`) inside frequently called parsing functions (like IP validation) causes significant garbage collection overhead due to repeated object allocations. On slow or memory-constrained environments, this leads to observable pauses during continuous polling.
 **Action:** Replace `String.split` and intermediate collections with zero-allocation, manual character iteration loops for high-frequency string validation functions.
+
+## 2026-10-18 - StringBuilder to CharSequence optimization in Android TextView
+**Learning:** `TextView.append()` in Android accepts a `CharSequence`. When appending multiple lines from a process output sequentially, converting a `StringBuilder` (which implements `CharSequence`) to a `String` using `.toString()` before passing it to `.append()` causes unnecessary garbage collection and object allocations on the UI thread, causing micro-stutters. Creating new instances of `Runnable` on every event callback instead of hoisting them can also lead to similar memory pressure.
+**Action:** Pass `StringBuilder` directly to methods expecting `CharSequence` instead of calling `.toString()`, and hoist instances of `Runnable` to class level properties when used in frequent post updates.
