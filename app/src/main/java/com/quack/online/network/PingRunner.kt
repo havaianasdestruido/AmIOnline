@@ -54,6 +54,9 @@ class PingRunner {
             if (command.contains("ping6")) {
                 val fallbackCmd = listOf("ping", "-c", count.toString(), "-W", timeoutSeconds.toString(), trimmedTarget)
                 try {
+                    // ⚡ Bolt: Destroy the original process before re-assigning to avoid leaking process and file descriptors
+                    process?.destroy()
+
                     val pb = ProcessBuilder(fallbackCmd).redirectErrorStream(true)
                     process = pb.start()
                     val reader = BufferedReader(InputStreamReader(process.inputStream))
