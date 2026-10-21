@@ -28,4 +28,48 @@
     <string name="github_url">https://github.com/havaianasdestruido/AmIOnline/</string>
     <string name="about_version">Version 1.0.0</string>
     <string name="copied_to_clipboard">Copied log to clipboard</string>
+
+    <!-- Continuous monitoring -->
+    <string name="label_continuous_monitoring">Continuous Monitoring</string>
+    <string name="label_server">Server</string>
+    <string name="label_interval">Check every</string>
+    <string name="btn_start_monitoring">Start Monitoring</string>
+    <string name="btn_stop_monitoring">Stop Monitoring</string>
+    <string name="btn_reset_statistics">Reset Statistics</string>
+
+    <string name="monitoring_target_none">No server selected</string>
+    <string name="monitoring_status_active">Monitoring: %1$s — %2$s</string>
+    <string name="monitoring_status_inactive">Monitoring: Stopped</string>
+
+    <string name="monitoring_stats_summary">Attempts: %1$d | Successful: %2$d | Failed: %3$d</string>
+    <string name="monitoring_last_check">Last check: %1$s</string>
+    <string name="monitoring_never">Never</string>
+
+    <string name="monitoring_background_indicator">Monitoring runs in the background — status shown in the ongoing notification</string>
+
+    <string name="monitoring_target_required">Please enter a valid target host or IP</string>
+    <string name="error_dns_resolution">Could not resolve "%1$s". Please check the address and try again.</string>
+    <string name="monitoring_started">Monitoring started for %1$s</string>
+    <string name="monitoring_stopped">Monitoring stopped</string>
+    <string name="monitoring_statistics_reset">Statistics reset</string>
+
+    <string name="monitoring_invalid_interval">Please enter a valid number of seconds</string>
+    <string name="monitoring_interval_too_short">Minimum interval is %1$d seconds on this device.</string>
+    <string name="monitoring_interval_custom_hint">Seconds (minimum 10)</string>
+    <string name="monitoring_notification_permission_denied">Notification permission is required to show the ongoing monitoring notification.</string>
+
+    <string name="interval_15_seconds">15 seconds</string>
+    <string name="interval_30_seconds">30 seconds</string>
+    <string name="interval_1_minute">1 minute</string>
+    <string name="interval_2_minutes">2 minutes</string>
+    <string name="interval_5_minutes">5 minutes</string>
+    <string name="interval_10_minutes">10 minutes</string>
+    <string name="interval_custom">Custom</string>
+    <string name="interval_min_warning">Android cannot guarantee exact check timing: battery optimizations may delay checks, especially below one minute. The ongoing notification always shows the latest status.</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">AmIOnline Monitoring</string>
+    <string name="notification_channel_description">Ongoing notification showing continuous server monitoring status</string>
+    <string name="notification_action_stop">Stop Monitoring</string>
+    <string name="notification_action_open">Open App</string>
 </resources>
