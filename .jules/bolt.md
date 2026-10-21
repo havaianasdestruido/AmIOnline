@@ -27,3 +27,7 @@
 ## 2026-10-18 - StringBuilder to CharSequence optimization in Android TextView
 **Learning:** `TextView.append()` in Android accepts a `CharSequence`. When appending multiple lines from a process output sequentially, converting a `StringBuilder` (which implements `CharSequence`) to a `String` using `.toString()` before passing it to `.append()` causes unnecessary garbage collection and object allocations on the UI thread, causing micro-stutters. Creating new instances of `Runnable` on every event callback instead of hoisting them can also lead to similar memory pressure.
 **Action:** Pass `StringBuilder` directly to methods expecting `CharSequence` instead of calling `.toString()`, and hoist instances of `Runnable` to class level properties when used in frequent post updates.
+
+## 2026-10-19 - Process and File Descriptor leaks in fallback strategies
+**Learning:** In Kotlin/Java, when implementing a try/catch fallback strategy that reassigns a `Process` (started by `ProcessBuilder`) to the same variable, the originally started process (and its associated file descriptors) can be leaked if an exception is thrown *after* the process starts but before it completes. The `finally { process?.destroy() }` block will only destroy the newly assigned fallback process.
+**Action:** Always check and explicitly destroy existing process variables (e.g., `process?.destroy()`) before re-assigning them in error handling or fallback blocks.
