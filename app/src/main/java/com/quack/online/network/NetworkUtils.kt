@@ -75,27 +75,19 @@ object NetworkUtils {
 
     // Compiled once per process instead of on every call: getAddressType() runs
     // for each ping, and Regex(...) would otherwise call Pattern.compile each time.
-    private val hostnameRegex = Regex("^(?=.{1,253}\$)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\$")
+    // ⚡ Bolt: Removed redundant lookahead (?=.{1,253}$) since length is checked explicitly in code
+    private val hostnameRegex = Regex("^(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\$")
 
     fun isValidHostname(input: String): Boolean {
         if (input.length > 253 || input.isEmpty()) return false
-        return hostnameRegex.matches(input) || input.equals("localhost", ignoreCase = true)
+        // ⚡ Bolt: Short-circuit the localhost check before running the heavy regex
+        if (input.equals("localhost", ignoreCase = true)) return true
+        return hostnameRegex.matches(input)
     }
 
     fun buildPingCommand(target: String, isIpv6: Boolean, count: Int = 4, timeoutSeconds: Int = 5): List<String> {
-        val cmd = mutableListOf<String>()
-        if (isIpv6) {
-            cmd.add("ping6")
-        } else {
-            cmd.add("ping")
-        }
-
-        cmd.add("-c")
-        cmd.add(count.toString())
-        cmd.add("-W")
-        cmd.add(timeoutSeconds.toString())
-        cmd.add(target.trim())
-
-        return cmd
+        // ⚡ Bolt: Use a fixed listOf instead of mutableListOf to avoid dynamic array resizing overhead
+        val pingBinary = if (isIpv6) "ping6" else "ping"
+        return listOf(pingBinary, "-c", count.toString(), "-W", timeoutSeconds.toString(), target.trim())
     }
 }
