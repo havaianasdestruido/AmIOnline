@@ -10,7 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.view.inputmode.EditorInfo
+import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private companion object {
         const val MAX_CONSOLE_CHARS = 32 * 1024
         const val MAX_CONSOLE_LINES = 500
+        const val REQUEST_POST_NOTIFICATIONS = 1001
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -558,9 +559,5 @@ class MainActivity : AppCompatActivity() {
 
         // Manual ping keeps working while monitoring is active; they run independently.
         binding.btnActionPing.isEnabled = true
-    }
-
-    private companion object {
-        private const val REQUEST_POST_NOTIFICATIONS = 1001
     }
 }

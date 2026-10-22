@@ -40,21 +40,21 @@ class MonitoringService : Service() {
         fun startIntent(context: Context): Intent =
             Intent(context, MonitoringService::class.java).apply {
                 action = ACTION_START_MONITORING
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_CLEAR_TOP
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
 
         /** Creates an explicit intent to stop monitoring (also used by the notification action). */
         fun stopIntent(context: Context): Intent =
             Intent(context, MonitoringService::class.java).apply {
                 action = ACTION_STOP_MONITORING
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_CLEAR_TOP
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
 
         /** Notifies the running service to re-read interval/target from persisted config. */
         fun updateConfigIntent(context: Context): Intent =
             Intent(context, MonitoringService::class.java).apply {
                 action = ACTION_UPDATE_CONFIG
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_CLEAR_TOP
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
     }
 

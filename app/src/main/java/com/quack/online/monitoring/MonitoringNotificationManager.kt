@@ -108,7 +108,7 @@ class MonitoringNotificationManager(private val context: Context) : MonitoringNo
     private fun stopMonitoringPendingIntent(): PendingIntent {
         val intent = Intent(context, MonitoringService::class.java).apply {
             action = MonitoringService.ACTION_STOP_MONITORING
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         return servicePendingIntent(intent, mutableFlags() or PendingIntent.FLAG_UPDATE_CURRENT)
     }
@@ -142,7 +142,7 @@ class MonitoringNotificationManager(private val context: Context) : MonitoringNo
 object ForegroundStarter {
     fun startForeground(service: android.app.Service, id: Int, notification: Notification, type: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            service.startForeground(id, notification, android.app.Service.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+            service.startForeground(id, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         } else {
             service.startForeground(id, notification)
         }

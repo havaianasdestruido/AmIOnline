@@ -25,7 +25,7 @@ data class MonitoringConfig(
 
         fun isValidInterval(intervalMs: Long): Boolean = intervalMs >= MIN_INTERVAL_MS
 
-        fun coerceInterval(intervalMs: Long): Long = intervalMs.coerceAt(MIN_INTERVAL_MS, Long.MAX_VALUE)
+        fun coerceInterval(intervalMs: Long): Long = intervalMs.coerceIn(MIN_INTERVAL_MS, Long.MAX_VALUE)
     }
 }
 
