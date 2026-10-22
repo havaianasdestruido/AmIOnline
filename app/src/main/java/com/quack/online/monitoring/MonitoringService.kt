@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import com.quack.online.network.NetworkUtils
+import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -62,7 +63,7 @@ class MonitoringService : Service() {
     private lateinit var notifications: MonitoringNotificationManager
     private lateinit var engine: MonitoringEngine
     private lateinit var serviceScope: CoroutineScope
-    private lateinit var serviceJob: SupervisorJob
+    private lateinit var serviceJob: CompletableJob
 
     override fun onCreate() {
         super.onCreate()
