@@ -11,7 +11,6 @@ class FakeMonitoringRepository : MonitoringRepository {
     override var monitoringActive: Boolean = false
 
     override var config: MonitoringConfig? = null
-        private set
 
     override val stats: MonitoringStats
         get() = currentStats
@@ -40,9 +39,13 @@ class FakeMonitoringRepository : MonitoringRepository {
         currentStats = MonitoringStats()
     }
 
-    override fun registerListener(listener: () -> Unit) = listeners.add(listener)
+    override fun registerListener(listener: () -> Unit) {
+        listeners.add(listener)
+    }
 
-    override fun unregisterListener(listener: () -> Unit) = listeners.remove(listener)
+    override fun unregisterListener(listener: () -> Unit) {
+        listeners.remove(listener)
+    }
 
     fun notifyListeners() = listeners.forEach { it() }
 

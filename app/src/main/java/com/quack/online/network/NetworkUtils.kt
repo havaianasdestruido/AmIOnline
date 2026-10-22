@@ -5,43 +5,23 @@ import java.net.InetAddress
 import java.net.UnknownHostException
 
 object NetworkUtils {
-
-    enum class AddressType {
-        IPV4,
-        IPV6,
-        HOSTNAME,
-        INVALID
-    }
+    enum class AddressType { IPV4, IPV6, HOSTNAME, INVALID }
 
     fun getAddressType(input: String): AddressType {
         val trimmed = input.trim()
         if (trimmed.isEmpty()) return AddressType.INVALID
-
-        // Check if IPv4 format (x.x.x.x)
-        if (isIpv4Address(trimmed)) {
-            return AddressType.IPV4
-        }
-
-        // Check if IPv6 format (contains colon and valid hex groups)
-        if (isIpv6Address(trimmed)) {
-            return AddressType.IPV6
-        }
-
-        // Check basic hostname format
-        if (isValidHostname(trimmed)) {
-            return AddressType.HOSTNAME
-        }
-
+        if (isIpv4Address(trimmed)) return AddressType.IPV4
+        if (isIpv6Address(trimmed)) return AddressType.IPV6
+        if (isValidHostname(trimmed)) return AddressType.HOSTNAME
         return AddressType.INVALID
     }
 
-    // Zero-allocation IPv4 parsing optimized to avoid String.split and mapping overheads
-    // which cause significant GC pauses during heavy network polling
+    // Parse IPv4 without allocating an array via String.split().
     fun isIpv4Address(input: String): Boolean {
         var dots = 0
         var num = 0
         var len = 0
-        for (i in 0 until input.length) {
+        for (i in input.indices) {
             val c = input[i]
             if (c == '.') {
                 if (len == 0 || num > 255) return false
@@ -54,28 +34,51 @@ object NetworkUtils {
                 num = num * 10 + (c - '0')
                 len++
                 if (len > 3) return false
-            } else {
-                return false
-            }
+            } else return false
         }
         if (len == 0 || num > 255) return false
         if (len > 1 && input[input.length - len] == '0') return false
         return dots == 3
     }
 
-    // Compiled once per process instead of on every call. Avoids using android.util.Patterns
-    // which breaks local unit tests. Regex matches standard IPv6 formats.
-    private val ipv6Regex = Regex(
-        "^((?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$"
-    )
-
+    /**
+     * Validate numeric IPv6 literals with the JDK parser rather than a large regex.
+     *
+     * Only strings that can possibly be numeric IPv6 literals are handed to
+     * [InetAddress.getByName], so host names (e.g. "host:port") never trigger a blocking
+     * name lookup (see `.jules/bolt.md`, 2026-10-15).
+     */
     fun isIpv6Address(input: String): Boolean {
-        if (!input.contains(":")) return false
-        return ipv6Regex.matches(input)
+        if (!input.contains(':')) return false
+        if (!looksLikeNumericIpv6(input)) return false
+        return try {
+            InetAddress.getByName(input) is Inet6Address
+        } catch (_: Exception) {
+            false
+        }
     }
 
-    // Compiled once per process instead of on every call: getAddressType() runs
-    // for each ping, and Regex(...) would otherwise call Pattern.compile each time.
+    /** True when [input] only contains characters allowed in an IPv6 literal or its zone id. */
+    private fun looksLikeNumericIpv6(input: String): Boolean {
+        val zoneIndex = input.indexOf('%')
+        val addressPart = if (zoneIndex >= 0) input.substring(0, zoneIndex) else input
+        if (addressPart.isEmpty()) return false
+        for (c in addressPart) {
+            val isHexDigit = c in '0'..'9' || c in 'a'..'f' || c in 'A'..'F'
+            if (!isHexDigit && c != ':' && c != '.') return false
+        }
+        // Zone ids (e.g. "fe80::1%eth0") may contain ASCII letters, digits, '_' and '-'.
+        if (zoneIndex >= 0) {
+            val zone = input.substring(zoneIndex + 1)
+            if (zone.isEmpty()) return false
+            val allowed = zone.all {
+                it in '0'..'9' || it in 'a'..'z' || it in 'A'..'Z' || it == '_' || it == '-'
+            }
+            if (!allowed) return false
+        }
+        return true
+    }
+
     private val hostnameRegex = Regex("^(?=.{1,253}\$)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\$")
 
     fun isValidHostname(input: String): Boolean {
@@ -94,20 +97,21 @@ object NetworkUtils {
         return address.hostAddress.substringBefore('%')
     }
 
-    fun buildPingCommand(target: String, isIpv6: Boolean, count: Int = 4, timeoutSeconds: Int = 5): List<String> {
-        val cmd = mutableListOf<String>()
-        if (isIpv6) {
-            cmd.add("ping6")
-        } else {
-            cmd.add("ping")
+    fun buildPingCommand(
+        target: String,
+        isIpv6: Boolean,
+        count: Int = 4,
+        timeoutSeconds: Int = 5
+    ): List<String> {
+        require(count > 0) { "Ping count must be greater than zero" }
+        require(timeoutSeconds > 0) { "Ping timeout must be greater than zero" }
+        return buildList {
+            add(if (isIpv6) "ping6" else "ping")
+            add("-c")
+            add(count.toString())
+            add("-W")
+            add(timeoutSeconds.toString())
+            add(target.trim())
         }
-
-        cmd.add("-c")
-        cmd.add(count.toString())
-        cmd.add("-W")
-        cmd.add(timeoutSeconds.toString())
-        cmd.add(target.trim())
-
-        return cmd
     }
 }

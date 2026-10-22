@@ -63,7 +63,7 @@ class SharedPreferencesMonitoringRepository(private val context: Context) : Moni
             successfulAttempts = prefs.getLong(KEY_STATS_SUCCESS, 0),
             lastCheckMs = prefs.getLong(KEY_STATS_LAST_CHECK_MS, 0),
             lastSuccessMs = prefs.getLong(KEY_STATS_LAST_SUCCESS_MS, 0),
-            lastStatus = prefs.getString(KEY_STATS_LAST_STATUS, MonitoringStatus.IDLE),
+            lastStatus = prefs.getString(KEY_STATS_LAST_STATUS, MonitoringStatus.IDLE) ?: MonitoringStatus.IDLE,
         )
 
     override val lastStatus: String
