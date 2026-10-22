@@ -79,16 +79,19 @@ object NetworkUtils {
         return true
     }
 
-    // Compiled once per process instead of on every call: getAddressType() runs
-    // for each ping, and Regex(...) would otherwise call Pattern.compile each time.
-    // \z anchors reject a trailing newline that $ would accept.
+    // Compiled once per process instead of on every call: getAddressType() runs for each ping,
+    // and Regex(...) would otherwise call Pattern.compile every time.
+    // - The length lookahead (?=.{1,253}$) is redundant: isValidHostname() checks it explicitly.
+    // - \z anchors reject a trailing newline that $ would accept.
     private val hostnameRegex = Regex(
-        """^(?=.{1,253}\z)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}\z"""
+        """^(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}\z"""
     )
 
     fun isValidHostname(input: String): Boolean {
         if (input.length > 253 || input.isEmpty()) return false
-        return hostnameRegex.matches(input) || input.equals("localhost", ignoreCase = true)
+        // ⚡ Bolt: short-circuit the O(1) localhost check before the O(N) regex
+        if (input.equals("localhost", ignoreCase = true)) return true
+        return hostnameRegex.matches(input)
     }
 
     /**
@@ -110,13 +113,14 @@ object NetworkUtils {
     ): List<String> {
         require(count > 0) { "Ping count must be greater than zero" }
         require(timeoutSeconds > 0) { "Ping timeout must be greater than zero" }
-        return buildList {
-            add(if (isIpv6) "ping6" else "ping")
-            add("-c")
-            add(count.toString())
-            add("-W")
-            add(timeoutSeconds.toString())
-            add(target.trim())
-        }
+        // ⚡ Bolt: a fixed listOf avoids the mutableListOf growth/backing-array overhead
+        return listOf(
+            if (isIpv6) "ping6" else "ping",
+            "-c",
+            count.toString(),
+            "-W",
+            timeoutSeconds.toString(),
+            target.trim()
+        )
     }
 }
