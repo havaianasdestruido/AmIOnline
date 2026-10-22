@@ -2,6 +2,11 @@
     <string name="app_name">AmIOnline</string>
     <string name="menu_ping">Ping Connection</string>
     <string name="menu_about">About</string>
+    <string name="menu_theme">Appearance</string>
+    <string name="theme_dialog_title">Choose appearance</string>
+    <string name="theme_material_you">Material You (default)</string>
+    <string name="theme_classic">Default palette</string>
+    <string name="theme_amoled">Pure black AMOLED</string>
 
     <string name="title_ping">Ping Network</string>
     <string name="title_about">About AmIOnline</string>

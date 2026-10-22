@@ -1,10 +1,39 @@
 <resources>
+    <!-- Material You is the default. On Android 12+ the system dynamic color overlay is applied. -->
     <style name="Theme.AmIOnline" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#6750A4</item>
+        <item name="colorPrimaryVariant">#4F378B</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#625B71</item>
+        <item name="colorSecondaryVariant">#4A4458</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="android:colorAccent">?attr/colorSecondary</item>
+    </style>
+
+    <style name="Theme.AmIOnline.Classic" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">#1976D2</item>
         <item name="colorPrimaryVariant">#0D47A1</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorSecondary">#26A69A</item>
         <item name="colorSecondaryVariant">#00796B</item>
         <item name="colorOnSecondary">#FFFFFF</item>
+    </style>
+
+    <style name="Theme.AmIOnline.Amoled" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#D0BCFF</item>
+        <item name="colorPrimaryVariant">#6750A4</item>
+        <item name="colorOnPrimary">#381E72</item>
+        <item name="colorSecondary">#CCC2DC</item>
+        <item name="colorSecondaryVariant">#4A4458</item>
+        <item name="colorOnSecondary">#332D41</item>
+        <item name="android:colorAccent">#D0BCFF</item>
+        <item name="android:colorBackground">#000000</item>
+        <item name="colorSurface">#000000</item>
+        <item name="colorOnSurface">#E6E1E9</item>
+        <item name="android:windowBackground">#000000</item>
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#000000</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
     </style>
 </resources>
