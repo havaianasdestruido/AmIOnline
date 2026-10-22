@@ -21,6 +21,11 @@ class NetworkUtilsTest {
     }
 
     @Test
+    fun testValidHostnameEndsAtInputBoundary() {
+        assertTrue(NetworkUtils.isValidHostname("example.com"))
+    }
+
+    @Test
     fun testBuildPingCommand() {
         assertEquals(
             listOf("ping", "-c", "4", "-W", "3", "1.1.1.1"),
