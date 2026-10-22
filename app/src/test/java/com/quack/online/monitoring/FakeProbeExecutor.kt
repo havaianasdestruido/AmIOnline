@@ -1,6 +1,6 @@
 package com.quack.online.monitoring
 
-import java.util.concurrent.ArrayDeque
+import java.util.ArrayDeque
 
 /**
  * Scripted [ProbeExecutor] for deterministic engine tests. Results are returned in the order
