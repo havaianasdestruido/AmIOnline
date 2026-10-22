@@ -79,8 +79,7 @@ object NetworkUtils {
         return true
     }
 
-    private val hostnameRegex =
-        Regex("^(?=.{1,253}\\$)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\\$")
+    private val hostnameRegex = Regex("^(?=.{1,253}\$)(?:(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\$")
 
     fun isValidHostname(input: String): Boolean {
         if (input.length > 253 || input.isEmpty()) return false
