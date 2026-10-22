@@ -25,7 +25,36 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest
+        run: |
+          set -o pipefail
+          ./gradlew testDebugUnitTest 2>&1 | tee "$RUNNER_TEMP/gradle-test.log"
+
+      - name: Report unit test failures
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import glob, os, xml.etree.ElementTree as ET
+
+          log = os.path.join(os.environ.get("RUNNER_TEMP", ""), "gradle-test.log")
+          if os.path.exists(log):
+              lines = [line.rstrip() for line in open(log, errors="replace") if line.strip()]
+              for line in lines[-8:]:
+                  print("::error::" + line[:900])
+
+          for path in glob.glob("app/build/test-results/testDebugUnitTest/*.xml"):
+              try:
+                  root = ET.parse(path).getroot()
+              except Exception:
+                  continue
+              for case in root.iter("testcase"):
+                  node = case.find("failure")
+                  if node is None:
+                      node = case.find("error")
+                  if node is None:
+                      continue
+                  message = (node.get("message") or node.text or "").strip().replace("\n", " ")
+                  print("::error title=%s.%s::%s" % (case.get("classname"), case.get("name"), message[:900]))
+          PY
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
