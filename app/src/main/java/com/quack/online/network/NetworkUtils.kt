@@ -2,6 +2,7 @@ package com.quack.online.network
 
 import java.net.Inet6Address
 import java.net.InetAddress
+import java.net.UnknownHostException
 
 object NetworkUtils {
 
@@ -80,6 +81,17 @@ object NetworkUtils {
     fun isValidHostname(input: String): Boolean {
         if (input.length > 253 || input.isEmpty()) return false
         return hostnameRegex.matches(input) || input.equals("localhost", ignoreCase = true)
+    }
+
+    /**
+     * Resolves [target] to its first IP address for display purposes.
+     * Literal IP addresses are returned as-is. Throws [UnknownHostException] when the
+     * address cannot be resolved; callers handle this gracefully (error UI, no false counters).
+     */
+    fun resolveIpAddress(target: String): String {
+        val address = InetAddress.getByName(target.trim())
+        // Strip IPv6 zone id (e.g. "fe80::1%eth0") for display and for the ping command
+        return address.hostAddress.substringBefore('%')
     }
 
     fun buildPingCommand(target: String, isIpv6: Boolean, count: Int = 4, timeoutSeconds: Int = 5): List<String> {

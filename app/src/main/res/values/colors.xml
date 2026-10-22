@@ -5,4 +5,7 @@
     <color name="status_offline">#D32F2F</color>
     <color name="console_bg">#121212</color>
     <color name="console_text">#00FF66</color>
+
+    <color name="monitoring_background_active">#1B5E20</color>
+    <color name="monitoring_background_active_tint">#E8F5E9</color>
 </resources>
