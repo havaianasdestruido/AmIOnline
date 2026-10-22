@@ -1,6 +1,6 @@
 # AmIOnline
 
-Simple WiFi/Ethernet connection checker Android app with **continuous server monitoring**.
+A lightweight Android app for checking whether a selected host or IP address responds to ICMP ping over Wi-Fi or Ethernet, with **continuous server monitoring**.
 
 ![](img/1.jpg)
 
@@ -68,3 +68,11 @@ Requires the Android SDK (compileSdk 34, targetSdk 34, minSdk 24) and a JDK.
 
 - Exact sub-minute cadence cannot be guaranteed under Android battery optimizations (Doze/App Standby); the foreground service keeps monitoring as long as the system allows it.
 - On very restricted device vendor builds, background execution may be more aggressive; the ongoing notification is the source of truth for whether monitoring is still active.
+
+## What the result means
+
+- **ONLINE** means the selected target answered at least one probe (a real reply line was parsed from the ping output).
+- **OFFLINE** means the ping utility did not report a successful reply, or the target did not respond.
+- A successful ping only proves that the selected target was reachable for that check. It does **not** guarantee that general Internet access, DNS, HTTPS, or other services are working.
+- Some networks and hosts block ICMP. A host or service may still be available even when ping reports no reply.
+- Hostnames are validated locally; DNS resolution happens when the system ping utility executes.

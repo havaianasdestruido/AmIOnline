@@ -36,6 +36,11 @@ import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
+    private companion object {
+        const val MAX_CONSOLE_CHARS = 32 * 1024
+        const val MAX_CONSOLE_LINES = 500
+    }
+
     private lateinit var binding: ActivityMainBinding
     private val pingRunner = PingRunner()
     private var pingJob: Job? = null
@@ -59,6 +64,7 @@ class MainActivity : AppCompatActivity() {
             // Pass StringBuilder directly (as CharSequence) to avoid String allocation overhead via .toString()
             binding.tvConsoleOutput.append(pendingConsoleLines)
             pendingConsoleLines.clear()
+            trimConsoleOutput()
             // Post the scroll to execute after the text view layout updates
             binding.scrollConsole.post(scrollRunnable)
         }
@@ -354,8 +360,28 @@ class MainActivity : AppCompatActivity() {
         binding.tvStatusBadge.setTextColor(ContextCompat.getColor(this, colorRes))
     }
 
+    private fun trimConsoleOutput() {
+        val current = binding.tvConsoleOutput.text.toString()
+        val withinCharacterLimit = if (current.length > MAX_CONSOLE_CHARS) {
+            val start = current.length - MAX_CONSOLE_CHARS
+            val nextLine = current.indexOf('\n', start)
+            current.substring(if (nextLine >= 0) nextLine + 1 else start)
+        } else {
+            current
+        }
+        val retained = withinCharacterLimit.split('\n')
+            .takeLast(MAX_CONSOLE_LINES)
+            .joinToString("\n")
+        if (retained != current) binding.tvConsoleOutput.text = retained
+    }
+
     private fun appendConsole(text: String) {
         pendingConsoleLines.append(text).append('\n')
+        if (pendingConsoleLines.length > MAX_CONSOLE_CHARS) {
+            val overflow = pendingConsoleLines.length - MAX_CONSOLE_CHARS
+            val nextLine = pendingConsoleLines.indexOf("\n", overflow)
+            pendingConsoleLines.delete(0, if (nextLine >= 0) nextLine + 1 else overflow)
+        }
 
         if (!isConsoleUpdateScheduled) {
             isConsoleUpdateScheduled = true
