@@ -38,7 +38,9 @@ jobs:
           log = os.path.join(os.environ.get("RUNNER_TEMP", ""), "gradle-test.log")
           if os.path.exists(log):
               lines = [line.rstrip() for line in open(log, errors="replace") if line.strip()]
-              for line in lines[-8:]:
+              compile_errors = [l for l in lines if l.startswith("e: ") or " error: " in l]
+              failed_tasks = [l for l in lines if l.startswith("> Task") and "FAILED" in l]
+              for line in (compile_errors or failed_tasks or lines[-6:])[:10]:
                   print("::error::" + line[:900])
 
           for path in glob.glob("app/build/test-results/testDebugUnitTest/*.xml"):
