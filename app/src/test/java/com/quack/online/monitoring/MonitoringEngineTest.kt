@@ -1,12 +1,10 @@
 package com.quack.online.monitoring
 
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlinx.coroutines.runBlocking
 
 class MonitoringEngineTest {
 
@@ -15,6 +13,20 @@ class MonitoringEngineTest {
                           executor: FakeProbeExecutor = FakeProbeExecutor()): MonitoringEngine {
         repo.config = MonitoringConfig("1.1.1.1", 60_000L, "1.1.1.1", "1.1.1.1")
         return MonitoringEngine(repo, notifier, executor)
+    }
+
+    /**
+     * Waits for [condition] instead of sleeping a fixed amount of time.
+     *
+     * The engine runs its loop on Dispatchers.Default, so a fixed sleep can be too short on a
+     * loaded machine and make these tests flaky.
+     */
+    private fun awaitUntil(timeoutMs: Long = 5_000, condition: () -> Boolean) {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (!condition() && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10)
+        }
+        assertTrue("condition was not met within ${timeoutMs}ms", condition())
     }
 
     @Test
@@ -26,7 +38,7 @@ class MonitoringEngineTest {
 
         engine.start()
         // One cycle runs immediately (interval delay is long).
-        Thread.sleep(200)
+        awaitUntil { repo.stats.totalAttempts == 1L }
         engine.stop()
 
         assertEquals(1L, repo.stats.totalAttempts)
@@ -45,7 +57,7 @@ class MonitoringEngineTest {
         val engine = MonitoringEngine(repo, notifier, executor)
 
         engine.start()
-        Thread.sleep(200)
+        awaitUntil { repo.stats.totalAttempts == 1L }
         engine.stop()
 
         assertEquals(1L, repo.stats.totalAttempts)
@@ -62,7 +74,7 @@ class MonitoringEngineTest {
         val engine = MonitoringEngine(repo, notifier, executor)
 
         engine.start()
-        Thread.sleep(200)
+        awaitUntil { notifier.lastStatus == MonitoringStatus.ERROR }
         engine.stop()
 
         assertEquals(0L, repo.stats.totalAttempts)
@@ -82,9 +94,9 @@ class MonitoringEngineTest {
         // A 60s interval means only the first cycle runs before we stop; to exercise accumulation
         // we run three cycles back to back by restarting the engine.
         val engine = MonitoringEngine(repo, notifier, executor)
-        repeat(3) {
+        repeat(3) { index ->
             engine.start()
-            Thread.sleep(200)
+            awaitUntil { repo.stats.totalAttempts == (index + 1).toLong() }
             engine.stop()
         }
 
@@ -101,7 +113,9 @@ class MonitoringEngineTest {
 
         engine.start()
         engine.start() // second start must be a no-op
-        Thread.sleep(200)
+        awaitUntil { executor.invocationCount == 1 }
+        // Give a (wrongly) duplicated loop the chance to run a second cycle.
+        Thread.sleep(150)
         engine.stop()
 
         assertEquals(1, executor.invocationCount)
@@ -114,9 +128,9 @@ class MonitoringEngineTest {
         val engine = newEngine(executor = executor)
 
         engine.start()
-        Thread.sleep(200)
+        awaitUntil { executor.invocationCount == 1 }
         engine.reschedule() // cancel + restart; one more cycle begins immediately
-        Thread.sleep(200)
+        awaitUntil { executor.invocationCount == 2 }
         engine.stop()
 
         assertEquals(2, executor.invocationCount)
@@ -133,7 +147,7 @@ class MonitoringEngineTest {
         val engine = MonitoringEngine(repo, notifier, executor)
 
         engine.start()
-        Thread.sleep(200)
+        awaitUntil { notifier.lastStatus == MonitoringStatus.ERROR }
         engine.stop()
 
         // Counters unchanged: DNS/resolution errors are not counted as transmitted probes.
@@ -152,7 +166,7 @@ class MonitoringEngineTest {
         val engine = MonitoringEngine(repo, notifier, executor)
 
         engine.start()
-        Thread.sleep(200)
+        awaitUntil { executor.lastTarget != null }
         engine.stop()
 
         assertNotNull(executor.lastTarget)
