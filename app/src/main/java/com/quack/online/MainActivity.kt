@@ -37,8 +37,9 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity() {
 
     private companion object {
-        const val MAX_CONSOLE_CHARS = 32 * 1024
-        const val MAX_CONSOLE_LINES = 500
+        // The rendered console may grow past the retained size before it is re-rendered from
+        // the bounded snapshot, which keeps TextView content and memory use bounded.
+        const val MAX_RENDERED_CONSOLE_CHARS = 64 * 1024
         const val REQUEST_POST_NOTIFICATIONS = 1001
     }
 
@@ -51,23 +52,42 @@ class MainActivity : AppCompatActivity() {
     private val repository = SharedPreferencesMonitoringRepository(this)
     private var monitoringResolveJob: Job? = null
 
+    // Retained console output is bounded (500 lines / 32 KiB); the TextView is re-rendered
+    // from it instead of growing forever.
+    private val consoleLog = ConsoleLog()
     private val pendingConsoleLines = StringBuilder()
     private var isConsoleUpdateScheduled = false
+    private var renderedConsoleChars = 0
+    private var consoleScrollPending = false
+    private var consoleScrollAnchorY = 0
 
     // Hoisted to avoid allocating a new anonymous Runnable on every console update
     private val scrollRunnable = Runnable {
-        binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
+        consoleScrollPending = false
+        // Do not yank the view down if the user scrolled up while the frame was pending.
+        if (binding.scrollConsole.scrollY >= consoleScrollAnchorY) {
+            binding.scrollConsole.fullScroll(View.FOCUS_DOWN)
+        }
     }
 
     private val updateConsoleRunnable = Runnable {
         isConsoleUpdateScheduled = false
         if (pendingConsoleLines.isNotEmpty()) {
-            // Pass StringBuilder directly (as CharSequence) to avoid String allocation overhead via .toString()
-            binding.tvConsoleOutput.append(pendingConsoleLines)
+            val scrollView = binding.scrollConsole
+            // Only follow the output when the user is already reading the bottom of the log.
+            val shouldFollowOutput = !scrollView.canScrollVertically(1)
+            consoleScrollAnchorY = scrollView.scrollY
+            if (renderedConsoleChars + pendingConsoleLines.length > MAX_RENDERED_CONSOLE_CHARS) {
+                // Re-render from the bounded snapshot instead of letting the TextView grow forever.
+                binding.tvConsoleOutput.text = consoleLog.snapshot()
+                renderedConsoleChars = binding.tvConsoleOutput.text?.length ?: 0
+            } else {
+                // Pass StringBuilder directly (as CharSequence) to avoid String allocation overhead via .toString()
+                binding.tvConsoleOutput.append(pendingConsoleLines)
+                renderedConsoleChars += pendingConsoleLines.length
+            }
             pendingConsoleLines.clear()
-            trimConsoleOutput()
-            // Post the scroll to execute after the text view layout updates
-            binding.scrollConsole.post(scrollRunnable)
+            if (shouldFollowOutput) scheduleConsoleScroll()
         }
     }
 
@@ -266,6 +286,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnClearLog.setOnClickListener {
+            consoleLog.clear()
             binding.tvConsoleOutput.text = ""
             pendingConsoleLines.clear()
         }
@@ -361,28 +382,17 @@ class MainActivity : AppCompatActivity() {
         binding.tvStatusBadge.setTextColor(ContextCompat.getColor(this, colorRes))
     }
 
-    private fun trimConsoleOutput() {
-        val current = binding.tvConsoleOutput.text.toString()
-        val withinCharacterLimit = if (current.length > MAX_CONSOLE_CHARS) {
-            val start = current.length - MAX_CONSOLE_CHARS
-            val nextLine = current.indexOf('\n', start)
-            current.substring(if (nextLine >= 0) nextLine + 1 else start)
-        } else {
-            current
-        }
-        val retained = withinCharacterLimit.split('\n')
-            .takeLast(MAX_CONSOLE_LINES)
-            .joinToString("\n")
-        if (retained != current) binding.tvConsoleOutput.text = retained
+    private fun scheduleConsoleScroll() {
+        if (consoleScrollPending) return
+        consoleScrollPending = true
+        // Post the scroll to execute after the text view layout updates
+        binding.scrollConsole.post(scrollRunnable)
     }
 
     private fun appendConsole(text: String) {
+        // Keep retained output bounded; the TextView is re-rendered from this log when needed.
+        consoleLog.append(text)
         pendingConsoleLines.append(text).append('\n')
-        if (pendingConsoleLines.length > MAX_CONSOLE_CHARS) {
-            val overflow = pendingConsoleLines.length - MAX_CONSOLE_CHARS
-            val nextLine = pendingConsoleLines.indexOf("\n", overflow)
-            pendingConsoleLines.delete(0, if (nextLine >= 0) nextLine + 1 else overflow)
-        }
 
         if (!isConsoleUpdateScheduled) {
             isConsoleUpdateScheduled = true
