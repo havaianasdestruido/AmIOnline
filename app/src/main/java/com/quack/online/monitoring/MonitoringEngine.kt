@@ -5,7 +5,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /**
@@ -51,7 +53,9 @@ class MonitoringEngine(
     }
 
     private suspend fun runLoop() {
-        while (job?.isActive == true) {
+        // Follow this coroutine's own lifecycle: reading the `job` field races with start(),
+        // which assigns it only after launch() returns, and could exit the loop immediately.
+        while (currentCoroutineContext().isActive) {
             val config = repository.config ?: return
             val intervalMs = MonitoringConfig.coerceInterval(config.intervalMs)
             val ip = config.resolvedIp ?: config.target
