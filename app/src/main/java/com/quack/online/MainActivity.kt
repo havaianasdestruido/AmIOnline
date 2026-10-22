@@ -16,6 +16,8 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
+import com.google.android.material.color.DynamicColors
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -41,6 +43,9 @@ class MainActivity : AppCompatActivity() {
         // the bounded snapshot, which keeps TextView content and memory use bounded.
         const val MAX_RENDERED_CONSOLE_CHARS = 64 * 1024
         const val REQUEST_POST_NOTIFICATIONS = 1001
+        const val THEME_MATERIAL_YOU = 0
+        const val THEME_CLASSIC = 1
+        const val THEME_AMOLED = 2
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -114,8 +119,17 @@ class MainActivity : AppCompatActivity() {
     )
     private val MIN_INTERVAL_SECONDS = MonitoringConfig.MIN_INTERVAL_MS / 1000
 
+    private val themePreferences by lazy { getSharedPreferences("appearance", Context.MODE_PRIVATE) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val selectedTheme = themePreferences.getInt("theme", THEME_MATERIAL_YOU)
+        setTheme(when (selectedTheme) {
+            THEME_CLASSIC -> R.style.Theme_AmIOnline_Classic
+            THEME_AMOLED -> R.style.Theme_AmIOnline_Amoled
+            else -> R.style.Theme_AmIOnline
+        })
         super.onCreate(savedInstanceState)
+        if (selectedTheme == THEME_MATERIAL_YOU) DynamicColors.applyToActivityIfAvailable(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -178,6 +192,7 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.nav_ping -> showPingPage()
                 R.id.nav_about -> showAboutPage()
+                R.id.nav_theme -> showThemePicker()
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
@@ -197,6 +212,28 @@ class MainActivity : AppCompatActivity() {
         binding.layoutAboutPage.visibility = View.VISIBLE
         supportActionBar?.title = getString(R.string.title_about)
         binding.navView.setCheckedItem(R.id.nav_about)
+    }
+
+    private fun showThemePicker() {
+        val choices = arrayOf(
+            getString(R.string.theme_material_you),
+            getString(R.string.theme_classic),
+            getString(R.string.theme_amoled)
+        )
+        val currentTheme = themePreferences.getInt("theme", THEME_MATERIAL_YOU)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.theme_dialog_title)
+            .setSingleChoiceItems(choices, currentTheme) { dialog, selection ->
+                if (selection != currentTheme) {
+                    themePreferences.edit().putInt("theme", selection).apply()
+                    dialog.dismiss()
+                    recreate()
+                } else {
+                    dialog.dismiss()
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     /* ---------------------------------------------------------------- destination selection ---------------------------------------------------------------- */
