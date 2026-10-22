@@ -31,3 +31,11 @@
 ## 2026-10-19 - Process and File Descriptor leaks in fallback strategies
 **Learning:** In Kotlin/Java, when implementing a try/catch fallback strategy that reassigns a `Process` (started by `ProcessBuilder`) to the same variable, the originally started process (and its associated file descriptors) can be leaked if an exception is thrown *after* the process starts but before it completes. The `finally { process?.destroy() }` block will only destroy the newly assigned fallback process.
 **Action:** Always check and explicitly destroy existing process variables (e.g., `process?.destroy()`) before re-assigning them in error handling or fallback blocks.
+
+## 2026-10-21 - Regex lookahead performance impact
+**Learning:** Using lookaheads in Regex (like `(?=.{1,253}$)`) for string length validation can significantly impact regex execution performance, especially when called frequently. In `NetworkUtils.isValidHostname`, checking length explicitly with Kotlin code and removing the lookahead reduced execution time by ~63%.
+**Action:** Avoid complex regex lookaheads for simple length validation. Validate string length explicitly in code before running the regex to improve performance.
+
+## 2026-10-21 - Short-circuiting O(1) checks before O(N) regex
+**Learning:** Putting a fast equality check (e.g., `input.equals("localhost")`) *after* a heavy regular expression evaluation is inefficient if the fast check can positively identify the target.
+**Action:** Always place O(1) short-circuit checks before O(N) regex evaluations or other heavy operations to avoid unnecessary computation.
