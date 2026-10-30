@@ -61,20 +61,24 @@ object NetworkUtils {
     /** True when [input] only contains characters allowed in an IPv6 literal or its zone id. */
     private fun looksLikeNumericIpv6(input: String): Boolean {
         val zoneIndex = input.indexOf('%')
-        val addressPart = if (zoneIndex >= 0) input.substring(0, zoneIndex) else input
-        if (addressPart.isEmpty()) return false
-        for (c in addressPart) {
+        val addressLen = if (zoneIndex >= 0) zoneIndex else input.length
+        if (addressLen == 0) return false
+
+        // ⚡ Bolt: manual loop over chars avoids String.substring() and intermediate collection allocations
+        for (i in 0 until addressLen) {
+            val c = input[i]
             val isHexDigit = c in '0'..'9' || c in 'a'..'f' || c in 'A'..'F'
             if (!isHexDigit && c != ':' && c != '.') return false
         }
         // Zone ids (e.g. "fe80::1%eth0") may contain ASCII letters, digits, '_' and '-'.
         if (zoneIndex >= 0) {
-            val zone = input.substring(zoneIndex + 1)
-            if (zone.isEmpty()) return false
-            val allowed = zone.all {
-                it in '0'..'9' || it in 'a'..'z' || it in 'A'..'Z' || it == '_' || it == '-'
+            if (zoneIndex + 1 == input.length) return false
+            // ⚡ Bolt: manual iteration avoids zone.all {} lambda allocations
+            for (i in zoneIndex + 1 until input.length) {
+                val c = input[i]
+                val allowed = c in '0'..'9' || c in 'a'..'z' || c in 'A'..'Z' || c == '_' || c == '-'
+                if (!allowed) return false
             }
-            if (!allowed) return false
         }
         return true
     }

@@ -39,3 +39,7 @@
 ## 2026-10-21 - Short-circuiting O(1) checks before O(N) regex
 **Learning:** Putting a fast equality check (e.g., `input.equals("localhost")`) *after* a heavy regular expression evaluation is inefficient if the fast check can positively identify the target.
 **Action:** Always place O(1) short-circuit checks before O(N) regex evaluations or other heavy operations to avoid unnecessary computation.
+
+## 2026-10-22 - Avoid `String.substring` and functional collections in frequent text validations
+**Learning:** `String.substring` creates a new String instance, allocating a new character array which contributes to garbage collection pressure. Similarly, using functional approaches like `CharSequence.all {}` creates small wrapper objects or lambda instances on the heap. When called frequently during string validation logic (like `looksLikeNumericIpv6`), this overhead becomes noticeable on restricted execution environments.
+**Action:** Replace `String.substring()` and collection functional mapping (`.all {}`, `.filter {}`) with manual index-based character loops for high-frequency string validation functions.
