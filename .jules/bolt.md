@@ -43,3 +43,7 @@
 ## 2026-10-22 - Avoid `String.substring` and functional collections in frequent text validations
 **Learning:** `String.substring` creates a new String instance, allocating a new character array which contributes to garbage collection pressure. Similarly, using functional approaches like `CharSequence.all {}` creates small wrapper objects or lambda instances on the heap. When called frequently during string validation logic (like `looksLikeNumericIpv6`), this overhead becomes noticeable on restricted execution environments.
 **Action:** Replace `String.substring()` and collection functional mapping (`.all {}`, `.filter {}`) with manual index-based character loops for high-frequency string validation functions.
+
+## 2026-10-23 - Avoid intermediate list allocations for Flow collection in periodic polling
+**Learning:** In continuous background monitoring loops (like `ProbeExecutor`), collecting a Flow directly into a `List` via `.toList()` and then using methods like `.filterIsInstance()` allocates an unnecessary intermediate list for every poll cycle. Even if the list is small, it creates garbage collection pressure when running persistently in the background.
+**Action:** Use manual `.collect {}` to update state variables instead of allocating intermediate collections like `.toList()` in frequently polling continuous background tasks.
