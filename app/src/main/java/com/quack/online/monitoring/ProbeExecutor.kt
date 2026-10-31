@@ -5,7 +5,6 @@ import com.quack.online.network.PingRunner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.coroutines.flow.toList
 
 /**
  * Executes a single monitoring probe. The real implementation delegates to [PingRunner]
@@ -19,23 +18,35 @@ interface ProbeExecutor {
 class RealProbeExecutor : ProbeExecutor {
     override suspend fun executeProbe(target: String, timeoutSeconds: Int): ProbeResult =
         withContext(Dispatchers.IO) {
-            val lines: List<PingResult> = withTimeoutOrNull((timeoutSeconds.toLong() * 1000 + 5_000)) {
-                PingRunner().executePing(target, count = 1, timeoutSeconds = timeoutSeconds).toList()
-            } ?: return@withContext ProbeResult.ExecutorError(
-                "Ping timed out after ${timeoutSeconds}s"
-            )
+            var error: PingResult.Error? = null
+            var finished: PingResult.Finished? = null
 
-            val error = lines.filterIsInstance<PingResult.Error>().firstOrNull()
-            if (error != null) {
-                return@withContext ProbeResult.ExecutorError(error.message ?: "Ping failed to start")
+            val completed = withTimeoutOrNull((timeoutSeconds.toLong() * 1000 + 5_000)) {
+                PingRunner().executePing(target, count = 1, timeoutSeconds = timeoutSeconds).collect { result ->
+                    when (result) {
+                        is PingResult.Error -> if (error == null) error = result
+                        is PingResult.Finished -> finished = result
+                        is PingResult.Output -> { /* unused in monitoring */ }
+                    }
+                }
+                true
             }
 
-            val finished = lines.filterIsInstance<PingResult.Finished>().lastOrNull()
+            if (completed == null) {
+                return@withContext ProbeResult.ExecutorError("Ping timed out after ${timeoutSeconds}s")
+            }
+
+            val finalError = error
+            if (finalError != null) {
+                return@withContext ProbeResult.ExecutorError(finalError.message ?: "Ping failed to start")
+            }
+
+            val finalFinished = finished
             when {
-                finished == null -> ProbeResult.ExecutorError("Ping process produced no result")
-                finished.repliesReceived > 0 -> ProbeResult.Success
+                finalFinished == null -> ProbeResult.ExecutorError("Ping process produced no result")
+                finalFinished.repliesReceived > 0 -> ProbeResult.Success
                 else -> ProbeResult.Failed(
-                    "No reply received (exit code ${finished.exitCode})"
+                    "No reply received (exit code ${finalFinished.exitCode})"
                 )
             }
         }
