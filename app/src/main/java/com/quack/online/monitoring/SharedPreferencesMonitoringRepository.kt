@@ -2,6 +2,7 @@ package com.quack.online.monitoring
 
 import android.content.Context
 import android.content.SharedPreferences
+import java.util.concurrent.CopyOnWriteArraySet
 
 /**
  * [MonitoringRepository] backed by SharedPreferences.
@@ -29,10 +30,10 @@ class SharedPreferencesMonitoringRepository(private val context: Context) : Moni
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    private val listeners = mutableSetOf<() -> Unit>()
+    private val listeners = CopyOnWriteArraySet<() -> Unit>()
 
     private val sharedListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-        listeners.toList().forEach { it() }
+        listeners.forEach { it() }
     }
 
     init {

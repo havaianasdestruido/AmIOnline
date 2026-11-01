@@ -47,3 +47,7 @@
 ## 2026-10-23 - Avoid Flow.toList() for unbounded or continuous streams
 **Learning:** In `ProbeExecutor.kt`, collecting a `Flow` using `.toList()` before processing it forces the allocation of an intermediate list containing all emissions (including every line of console output from the ping process). This creates unnecessary memory pressure and garbage collection overhead, especially when only specific terminal states (like `Error` or `Finished`) are needed.
 **Action:** Use `.collect {}` to process `Flow` emissions sequentially without allocating intermediate collections, storing only the necessary state in local variables.
+
+## 2026-10-24 - Avoid defensive `.toList()` copies in SharedPreferences listeners
+**Learning:** Using `mutableSetOf` for SharedPreferences listeners and iterating over them with `.toList().forEach { it() }` allocates an intermediate list every time a preference changes. When preferences change frequently (e.g., updating stats every monitoring cycle or 5 preferences at a time in `saveStats`), this causes noticeable garbage collection overhead over time.
+**Action:** Use a thread-safe collection like `CopyOnWriteArraySet` instead of `mutableSetOf` for listener collections to allow safe iteration without intermediate defensive copies.
