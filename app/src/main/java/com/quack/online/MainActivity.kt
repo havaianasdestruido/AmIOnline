@@ -250,8 +250,8 @@ class MainActivity : AppCompatActivity() {
         val currentLocales = AppCompatDelegate.getApplicationLocales()
         val selectedLanguage = when {
             currentLocales.size() == 0 -> 0
-            currentLocales[0].language.equals("ru", ignoreCase = true) -> 2
-            currentLocales[0].language.equals("pt", ignoreCase = true) -> 3
+            currentLocales[0]?.language?.equals("ru", ignoreCase = true) == true -> 2
+            currentLocales[0]?.language?.equals("pt", ignoreCase = true) == true -> 3
             else -> 1
         }
 
