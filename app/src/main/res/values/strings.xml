@@ -1,8 +1,14 @@
 <resources>
-    <string name="app_name">AmIOnline</string>
+    <string name="app_name" translatable="false">AmIOnline</string>
     <string name="menu_ping">Ping Connection</string>
     <string name="menu_about">About</string>
     <string name="menu_theme">Appearance</string>
+    <string name="menu_language">Language</string>
+    <string name="language_picker_title">Choose app language</string>
+    <string name="language_system_default">System default</string>
+    <string name="language_english">English</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_portuguese_brazil">Português (Brasil)</string>
     <string name="theme_dialog_title">Choose appearance</string>
     <string name="theme_material_you">Material You (default)</string>
     <string name="theme_classic">Default palette</string>
@@ -10,56 +16,52 @@
 
     <string name="title_ping">Ping Network</string>
     <string name="title_about">About AmIOnline</string>
-
-    <string name="label_select_target">Select Target Address</string>
+    <string name="label_select_target">Select target address</string>
     <string name="preset_cf_v4">Cloudflare IPv4 (1.1.1.1)</string>
     <string name="preset_cf_v6">Cloudflare IPv6 (2606:4700:4700::1111)</string>
     <string name="preset_google_v4">Google IPv4 (8.8.8.8)</string>
     <string name="preset_google_v6">Google IPv6 (2001:4860:4860::8888)</string>
-    <string name="preset_custom">Custom Address</string>
-
-    <string name="hint_custom_target">Enter IP address or hostname</string>
-    <string name="btn_ping">Start Ping</string>
-    <string name="btn_stop">Stop Ping</string>
-    <string name="btn_clear">Clear Console</string>
-    <string name="btn_copy">Copy Console</string>
-
+    <string name="preset_custom">Custom address</string>
+    <string name="hint_custom_target">Enter an IP address or hostname</string>
+    <string name="btn_ping">Start ping</string>
+    <string name="btn_stop">Stop ping</string>
+    <string name="btn_clear">Clear console</string>
+    <string name="btn_copy">Copy console</string>
     <string name="status_idle">Status: Idle</string>
     <string name="status_pinging">Status: Pinging…</string>
     <string name="status_online">Status: ONLINE (Success)</string>
     <string name="status_offline">Status: OFFLINE (Failed)</string>
 
-    <string name="about_description">AmIOnline is a lightweight, fully native Android application designed to test network connectivity via IPv4 and IPv6 ICMP ping.</string>
-    <string name="github_url">https://github.com/havaianasdestruido/AmIOnline/</string>
+    <string name="about_description">AmIOnline is a lightweight, fully native Android app for testing network connectivity with IPv4 and IPv6 ICMP pings.</string>
+    <string name="github_url" translatable="false">https://github.com/havaianasdestruido/AmIOnline/</string>
     <string name="about_version">Version 1.0.0</string>
-    <string name="copied_to_clipboard">Copied log to clipboard</string>
+    <string name="about_repository">GitHub repository</string>
+    <string name="nav_header_subtitle">Native connection checker</string>
+    <string name="copied_to_clipboard">Ping log copied to clipboard</string>
+    <string name="ping_clip_label">Ping output</string>
+    <string name="error_target_required">Enter a valid hostname or IP address.</string>
 
     <!-- Continuous monitoring -->
-    <string name="label_continuous_monitoring">Continuous Monitoring</string>
+    <string name="label_continuous_monitoring">Continuous monitoring</string>
     <string name="label_server">Server</string>
     <string name="label_interval">Check every</string>
-    <string name="btn_start_monitoring">Start Monitoring</string>
-    <string name="btn_stop_monitoring">Stop Monitoring</string>
-    <string name="btn_reset_statistics">Reset Statistics</string>
-
+    <string name="btn_start_monitoring">Start monitoring</string>
+    <string name="btn_stop_monitoring">Stop monitoring</string>
+    <string name="btn_reset_statistics">Reset statistics</string>
     <string name="monitoring_target_none">No server selected</string>
     <string name="monitoring_status_active">Monitoring: %1$s — %2$s</string>
     <string name="monitoring_status_inactive">Monitoring: Stopped</string>
-
     <string name="monitoring_stats_summary">Attempts: %1$d | Successful: %2$d | Failed: %3$d</string>
     <string name="monitoring_last_check">Last check: %1$s</string>
     <string name="monitoring_never">Never</string>
-
-    <string name="monitoring_background_indicator">Monitoring runs in the background — status shown in the ongoing notification</string>
-
-    <string name="monitoring_target_required">Please enter a valid target host or IP</string>
-    <string name="error_dns_resolution">Could not resolve "%1$s". Please check the address and try again.</string>
+    <string name="monitoring_background_indicator">Monitoring continues in the background. Check the ongoing notification for the latest status.</string>
+    <string name="monitoring_target_required">Enter a valid hostname or IP address.</string>
+    <string name="error_dns_resolution">Couldn’t resolve “%1$s”. Check the address and try again.</string>
     <string name="monitoring_started">Monitoring started for %1$s</string>
     <string name="monitoring_stopped">Monitoring stopped</string>
     <string name="monitoring_statistics_reset">Statistics reset</string>
-
-    <string name="monitoring_invalid_interval">Please enter a valid number of seconds</string>
-    <string name="monitoring_interval_too_short">Minimum interval is %1$d seconds on this device.</string>
+    <string name="monitoring_invalid_interval">Enter a valid number of seconds.</string>
+    <string name="monitoring_interval_too_short">The minimum interval on this device is %1$d seconds.</string>
     <string name="monitoring_interval_custom_hint">Seconds (minimum 10)</string>
     <string name="monitoring_notification_permission_denied">Notification permission is required to show the ongoing monitoring notification.</string>
 
@@ -70,11 +72,27 @@
     <string name="interval_5_minutes">5 minutes</string>
     <string name="interval_10_minutes">10 minutes</string>
     <string name="interval_custom">Custom</string>
-    <string name="interval_min_warning">Android cannot guarantee exact check timing: battery optimizations may delay checks, especially below one minute. The ongoing notification always shows the latest status.</string>
+    <string name="interval_min_warning">Android can’t guarantee exact check times. Battery optimization may delay checks, especially at intervals under one minute. The ongoing notification always shows the latest status.</string>
 
     <!-- Notification -->
-    <string name="notification_channel_name">AmIOnline Monitoring</string>
-    <string name="notification_channel_description">Ongoing notification showing continuous server monitoring status</string>
-    <string name="notification_action_stop">Stop Monitoring</string>
-    <string name="notification_action_open">Open App</string>
+    <string name="notification_channel_name">AmIOnline monitoring</string>
+    <string name="notification_channel_description">Ongoing notification with the status of continuous server monitoring</string>
+    <string name="notification_action_stop">Stop monitoring</string>
+    <string name="notification_action_open">Open app</string>
+    <string name="notification_title">%1$s — %2$s</string>
+    <string name="notification_status_idle">Idle</string>
+    <string name="notification_status_checking">Checking</string>
+    <string name="notification_status_online">Online</string>
+    <string name="notification_status_offline">Offline</string>
+    <string name="notification_status_error">Error</string>
+    <string name="notification_body">Attempts: %1$d | Successful: %2$d | Server: %3$s</string>
+    <string name="notification_expanded_stats">%1$s | Failed: %2$d</string>
+    <string name="notification_last_check">Last check: %1$s</string>
+    <string name="notification_never">Never</string>
+    <string name="notification_background">Monitoring continues in the background.</string>
+    <string name="console_ping_start">--- Pinging %1$s ---</string>
+    <string name="console_ping_complete_online">--- Completed: ONLINE ---</string>
+    <string name="console_ping_complete_offline">--- Completed: OFFLINE (Exit code %1$d) ---</string>
+    <string name="console_ping_stopped">--- Ping stopped by user ---</string>
+    <string name="console_ping_error">--- Error: %1$s ---</string>
 </resources>

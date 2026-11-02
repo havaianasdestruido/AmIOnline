@@ -183,16 +183,18 @@
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btn_monitoring_action"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
                                 android:layout_marginEnd="8dp"
                                 android:text="@string/btn_start_monitoring" />
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btn_monitoring_reset_stats"
                                 style="@style/Widget.MaterialComponents.Button.TextButton"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
                                 android:text="@string/btn_reset_statistics" />
                         </LinearLayout>
 
@@ -329,7 +331,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="GitHub Repository"
+                                android:text="@string/about_repository"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
 

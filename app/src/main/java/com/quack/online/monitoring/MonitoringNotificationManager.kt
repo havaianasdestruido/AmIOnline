@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.quack.online.MainActivity
 import com.quack.online.R
 
@@ -21,6 +22,9 @@ import com.quack.online.R
  */
 class MonitoringNotificationManager(private val context: Context) : MonitoringNotifier {
 
+    // Services do not inherit AppCompatActivity's locale-wrapped resources on pre-Android 13.
+    private val localizedContext = ContextCompat.getContextForLanguage(context)
+
     companion object {
         internal const val CHANNEL_ID = "com.quack.online.monitoring"
         internal const val NOTIFICATION_ID = 1001
@@ -33,9 +37,10 @@ class MonitoringNotificationManager(private val context: Context) : MonitoringNo
     fun buildNotification(status: String, serverIp: String, stats: MonitoringStats): Notification {
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .setContentTitle(MonitoringNotificationContent.title(status, serverIp))
+            .setContentTitle(MonitoringNotificationContent.title(localizedContext, status, serverIp))
             .setContentText(
                 MonitoringNotificationContent.body(
+                    localizedContext,
                     stats.totalAttempts,
                     stats.successfulAttempts,
                     serverIp,
@@ -43,7 +48,7 @@ class MonitoringNotificationManager(private val context: Context) : MonitoringNo
             )
             .setStyle(
                 NotificationCompat.BigTextStyle().bigText(
-                    MonitoringNotificationContent.expanded(status, serverIp, stats)
+                    MonitoringNotificationContent.expanded(localizedContext, status, serverIp, stats)
                 )
             )
             .setOngoing(true)
@@ -52,12 +57,12 @@ class MonitoringNotificationManager(private val context: Context) : MonitoringNo
             .setContentIntent(openAppPendingIntent())
             .addAction(
                 0,
-                context.getString(R.string.notification_action_stop),
+                localizedContext.getString(R.string.notification_action_stop),
                 stopMonitoringPendingIntent()
             )
             .addAction(
                 0,
-                context.getString(R.string.notification_action_open),
+                localizedContext.getString(R.string.notification_action_open),
                 openAppPendingIntent()
             )
             .build()
@@ -96,10 +101,10 @@ class MonitoringNotificationManager(private val context: Context) : MonitoringNo
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(
             CHANNEL_ID,
-            context.getString(R.string.notification_channel_name),
+            localizedContext.getString(R.string.notification_channel_name),
             NotificationManager.IMPORTANCE_LOW,
         ).apply {
-            description = context.getString(R.string.notification_channel_description)
+            description = localizedContext.getString(R.string.notification_channel_description)
             lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
         }
         notificationManager.createNotificationChannel(channel)
