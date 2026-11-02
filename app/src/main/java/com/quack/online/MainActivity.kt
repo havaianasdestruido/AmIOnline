@@ -17,6 +17,8 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.google.android.material.color.DynamicColors
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -193,6 +195,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_ping -> showPingPage()
                 R.id.nav_about -> showAboutPage()
                 R.id.nav_theme -> showThemePicker()
+                R.id.nav_language -> showLanguagePicker()
             }
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             true
@@ -231,6 +234,37 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     dialog.dismiss()
                 }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showLanguagePicker() {
+        val languageTags = listOf("", "en", "ru", "pt-BR")
+        val choices = arrayOf(
+            getString(R.string.language_system_default),
+            getString(R.string.language_english),
+            getString(R.string.language_russian),
+            getString(R.string.language_portuguese_brazil),
+        )
+        val currentLocales = AppCompatDelegate.getApplicationLocales()
+        val selectedLanguage = when {
+            currentLocales.size() == 0 -> 0
+            currentLocales[0].language.equals("ru", ignoreCase = true) -> 2
+            currentLocales[0].language.equals("pt", ignoreCase = true) -> 3
+            else -> 1
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.language_picker_title)
+            .setSingleChoiceItems(choices, selectedLanguage) { dialog, selection ->
+                dialog.dismiss()
+                val locales = if (languageTags[selection].isEmpty()) {
+                    LocaleListCompat.getEmptyLocaleList()
+                } else {
+                    LocaleListCompat.forLanguageTags(languageTags[selection])
+                }
+                AppCompatDelegate.setApplicationLocales(locales)
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -332,7 +366,7 @@ class MainActivity : AppCompatActivity() {
             val textToCopy = binding.tvConsoleOutput.text.toString()
             if (textToCopy.isNotEmpty()) {
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("Ping Output", textToCopy)
+                val clip = ClipData.newPlainText(getString(R.string.ping_clip_label), textToCopy)
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(this, getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
             }
@@ -365,7 +399,7 @@ class MainActivity : AppCompatActivity() {
     private fun startPing() {
         val target = getSelectedTarget()
         if (target.isEmpty()) {
-            Toast.makeText(this, "Please enter a valid target host or IP", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.error_target_required, Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -373,7 +407,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnActionPing.text = getString(R.string.btn_stop)
         updateStatusBadge(getString(R.string.status_pinging), R.color.status_pinging)
 
-        appendConsole("--- Pinging $target ---")
+        appendConsole(getString(R.string.console_ping_start, target))
 
         pingJob = lifecycleScope.launch {
             pingRunner.executePing(target).collect { result ->
@@ -384,16 +418,16 @@ class MainActivity : AppCompatActivity() {
                     is PingResult.Finished -> {
                         if (result.isSuccess) {
                             updateStatusBadge(getString(R.string.status_online), R.color.status_online)
-                            appendConsole("--- Completed: ONLINE ---")
+                            appendConsole(getString(R.string.console_ping_complete_online))
                         } else {
                             updateStatusBadge(getString(R.string.status_offline), R.color.status_offline)
-                            appendConsole("--- Completed: OFFLINE (Exit code ${result.exitCode}) ---")
+                            appendConsole(getString(R.string.console_ping_complete_offline, result.exitCode))
                         }
                         resetPingState()
                     }
                     is PingResult.Error -> {
                         updateStatusBadge(getString(R.string.status_offline), R.color.status_offline)
-                        appendConsole("--- Error: ${result.message} ---")
+                        appendConsole(getString(R.string.console_ping_error, result.message))
                         resetPingState()
                     }
                 }
@@ -404,7 +438,7 @@ class MainActivity : AppCompatActivity() {
     private fun stopPing() {
         pingJob?.cancel()
         pingJob = null
-        appendConsole("--- Ping stopped by user ---")
+        appendConsole(getString(R.string.console_ping_stopped))
         updateStatusBadge(getString(R.string.status_idle), R.color.status_idle)
         resetPingState()
     }
@@ -564,6 +598,18 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, R.string.monitoring_stopped, Toast.LENGTH_SHORT).show()
     }
 
+    private fun formatMonitoringTime(timestamp: Long): String = java.text.DateFormat
+        .getTimeInstance(java.text.DateFormat.SHORT, resources.configuration.locales[0])
+        .format(java.util.Date(timestamp))
+
+    private fun localizedMonitoringStatus(status: String): String = getString(when (status) {
+        MonitoringStatus.CHECKING -> R.string.notification_status_checking
+        MonitoringStatus.ONLINE -> R.string.notification_status_online
+        MonitoringStatus.OFFLINE -> R.string.notification_status_offline
+        MonitoringStatus.ERROR -> R.string.notification_status_error
+        else -> R.string.notification_status_idle
+    })
+
     private fun updateMonitoringUi() {
         val active = repository.monitoringActive
         binding.btnMonitoringAction.text = if (active) getString(R.string.btn_stop_monitoring) else getString(R.string.btn_start_monitoring)
@@ -581,7 +627,7 @@ class MainActivity : AppCompatActivity() {
             stats.totalAttempts, stats.successfulAttempts, stats.failedAttempts)
 
         binding.tvMonitoringLastCheck.text = if (stats.lastCheckMs > 0L) {
-            getString(R.string.monitoring_last_check, java.text.DateFormat.getTimeInstance().format(java.util.Date(stats.lastCheckMs)))
+            getString(R.string.monitoring_last_check, formatMonitoringTime(stats.lastCheckMs))
         } else {
             getString(R.string.monitoring_never)
         }
@@ -589,7 +635,7 @@ class MainActivity : AppCompatActivity() {
         val statusLine = when {
             active -> {
                 val ip = config?.resolvedIp ?: config?.target ?: ""
-                getString(R.string.monitoring_status_active, repository.lastStatus, ip)
+                getString(R.string.monitoring_status_active, localizedMonitoringStatus(repository.lastStatus), ip)
             }
             else -> getString(R.string.monitoring_status_inactive)
         }

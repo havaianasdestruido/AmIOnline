@@ -20,8 +20,8 @@ A lightweight Android app for checking whether a selected host or IP address res
 
 - **Manual ping**: one-off IPv4/IPv6 ping to Cloudflare, Google or a custom target (existing behaviour, unchanged).
 - **Continuous monitoring**: periodically pings a user-selected server at a configurable interval (default 1 minute, minimum 10 seconds) and reports the status in a **persistent ongoing Android notification**:
-  - Title: `ONLINE — 1.1.1.1`, `OFFLINE — 8.8.8.8`, `CHECKING — 1.1.1.1` or `ERROR — 1.1.1.1`
-  - Body: `Total attempts: 120 | Successful: 118 | Server IP: 1.1.1.1`
+  - English title examples: `Online — 1.1.1.1`, `Offline — 8.8.8.8`, `Checking — 1.1.1.1` or `Error — 1.1.1.1` (localized with the app language).
+  - Body: `Attempts: 120 | Successful: 118 | Server: 1.1.1.1` (also localized).
 - Notification actions: **Stop Monitoring** and **Open App**.
 - Monitoring runs as a **foreground service**, so it keeps working when you leave the app or lock the screen (subject to Android battery optimizations).
 - Counters (total / successful / failed attempts, last check time) are stored locally and survive restarts.
@@ -54,6 +54,10 @@ A lightweight Android app for checking whether a selected host or IP address res
 - `FOREGROUND_SERVICE` (Android 8+) and `FOREGROUND_SERVICE_DATA_SYNC` (Android 14+) — required to run the monitoring service in the foreground.
 
 No data leaves the device: all pinging, statistics and storage are local. No backend, analytics or third-party SDKs.
+
+## Languages
+
+The app bundles English, Russian, and Brazilian Portuguese translations. Choose **Language** in the navigation drawer to select a language or return to the system default; Android 13 and newer also expose the choice in Android’s per-app language settings (Settings → Apps → AmIOnline → Language). The choice is saved on older Android versions as well. No translation files or services are downloaded at runtime.
 
 ## Build
 
